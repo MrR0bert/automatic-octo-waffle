@@ -64,5 +64,3 @@ Switch( $PSCmdlet.ParameterSetName )
         $oVolumeC.Encrypt()
     }
 }
-
-Write-Host 'This is a git test line.' -Foregroundcolor Cyan
