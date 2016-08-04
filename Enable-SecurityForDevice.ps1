@@ -1,4 +1,22 @@
-﻿[CmdLetBinding()]
+﻿<#
+.SYNOPSIS
+    Enables TPM and Bitlocker for a device. Script to be used only with SCCM task sequences!
+.DESCRIPTION
+    Enables TPM and Bitlocker for a device. Script to be used only with SCCM task sequences!
+.PARAMETER initializeTS
+    Type: Switch
+    Description: Initialize the Task Sequence variables required for the script
+.PARAMETER enableTPM
+    Type: Switch
+    Description: Enable and Activate the TPM chip
+.PARAMETER startEncryption
+    Type: Switch
+    Description: Start encrypting the disk
+.NOTES
+    Author: Robert Kooistra
+    Date:   Aug 4, 2016
+#>
+[CmdLetBinding()]
 Param(
     [Parameter(ParameterSetName='InitializeTaskSequence')]
     [Switch]$initializeTS,
@@ -6,8 +24,8 @@ Param(
     [Parameter(ParameterSetName='EnableTPM')]
     [Switch]$enableTPM,
 
-    [Parameter(ParameterSetName='Test')]
-    [Switch]$Test
+    [Parameter(ParameterSetName='StartEncryption')]
+    [Switch]$startEncryption
 
 )
 
@@ -114,9 +132,5 @@ Switch( $PSCmdlet.ParameterSetName )
             New-LogEntry -message $_.Exception.Message 
             Return 3
         }
-    }
-
-    'Test' {
-        Write-Host "This is for testing...insert test code below"
     }
 }
