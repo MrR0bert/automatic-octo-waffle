@@ -134,3 +134,5 @@ Switch( $PSCmdlet.ParameterSetName )
         }
     }
 }
+
+Return 0
