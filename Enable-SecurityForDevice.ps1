@@ -25,7 +25,10 @@ Param(
     [Switch]$enableTPM,
 
     [Parameter(ParameterSetName='StartEncryption')]
-    [Switch]$startEncryption
+    [Switch]$startEncryption,
+
+    [Parameter(ParameterSetName='Debug')]
+    [Switch]$showTSVar
 
 )
 
@@ -62,7 +65,7 @@ Switch( $PSCmdlet.ParameterSetName )
         }
 
         # Initialize all veriables wtih default values
-        $bHasTpm = $false
+        $bHasTpm = $true
         $bGoEnableTpm = $false
         $bPrepareVolume = $false
         $bGoEncrypt = $false
@@ -132,6 +135,12 @@ Switch( $PSCmdlet.ParameterSetName )
             New-LogEntry -message $_.Exception.Message 
             Return 3
         }
+    }
+
+    'Debug' {
+       [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
+       
+       [System.Windows.Forms.MessageBox]::Show( "Banana!" )
     }
 }
 
