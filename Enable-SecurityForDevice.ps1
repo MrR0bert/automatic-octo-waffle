@@ -49,14 +49,18 @@ Function New-LogEntry( $message )
 Switch( $PSCmdlet.ParameterSetName )
 {
     'InitializeTaskSequence' {
+        New-LogEntry -message "Starting InitializeTaskSequence"
+
         Try {
-            $Tpm = Get-WmiObject -Namespace ROOT\CIMV2\Security\MicrosoftTpm -Class Win32_Tpm
+            New-LogEntry -message "Start creating task sequence variables"
 
             $oTsEnv = New-Object -ComObject Microsoft.SMS.TSEnvironment
             $bHasTpm = $oTsEnv.Value( "bHasTPM" )
             $bGoEnableTpm = $oTsEnv.Value( 'bGoEnableTpm' )
             $bPrepareVolume = $oTsEnv.Value( 'bPrepareVolume' )
             $bGoEncrypt = $oTsEnv.Value( 'bGoEncrypt' )
+
+            New-LogEntry -message "Finished creating task sequence variables"
         }
         Catch {
             # Log error
@@ -65,10 +69,20 @@ Switch( $PSCmdlet.ParameterSetName )
         }
 
         # Initialize all veriables wtih default values
+        New-LogEntry -message "Initialize all veriables wtih default values"
         $bHasTpm = $true
         $bGoEnableTpm = $false
         $bPrepareVolume = $false
         $bGoEncrypt = $false
+
+        New-LogEntry -message ("bHasTpm = $bHasTpm")
+        New-LogEntry -message ("bGoEnableTpm = $bGoEnableTpm")
+        New-LogEntry -message ("bPrepareVolume = $bPrepareVolume")
+        New-LogEntry -message ("bGoEncrypt = $bGoEncrypt")
+
+        New-LogEntry -message "Start TPM detection"
+        # Get the TPM
+        $Tpm = Get-WmiObject -Namespace ROOT\CIMV2\Security\MicrosoftTpm -Class Win32_Tpm
 
         If( $Tpm -eq $null ) # Computer has no TPM chip, we cannot continue
         {
@@ -78,6 +92,8 @@ Switch( $PSCmdlet.ParameterSetName )
         }
         Else # Computer has a TPM, we need to verify the status
         {
+            New-LogEntry -message "TPM detection succesful"
+
             # If all is true than we proceed to the encryption part
             If( ($Tpm.IsEnabled().isenabled -eq $true) -and ($Tpm.IsActivated().isactivated -eq $true) -and ($Tpm.IsOwned().isowned -eq $true) )
             {
@@ -109,10 +125,12 @@ Switch( $PSCmdlet.ParameterSetName )
     'EnableTPM' {
            
         Try {
+            New-LogEntry -message "Start EnableTPM"
             # Get the TPM chip WMI instance
             $oTpm = Get-Wmiobject -Namespace Root\Cimv2\Security\MicrosoftTpm -Class Win32_Tpm
             # Set request to 6: Enable and Activate TPM, computer should reboot after this
             $oTpm.SetPhysicalPresenceRequest(6) | Out-Null
+            New-LogEntry -message "Finished EnableTPM, rebooting"
         }
         Catch { 
             # Log error
@@ -123,24 +141,22 @@ Switch( $PSCmdlet.ParameterSetName )
 
     'StartEncryption' {
         Try {
+            New-LogEntry -message "Start StartEncryption"
+
             # Get the volume to be encrypted, we want the C: (system) drive
             $oVolumeC = Get-WmiObject -Namespace Root\Cimv2\Security\MicrosoftVolumeEncryption -Class Win32_EncryptableVolume -Filter "DriveLetter = 'C:'"
             # We want TPM protection
             $oVolumeC.ProtectKeyWithTPM()
             # Start encrypting!
             $oVolumeC.Encrypt()
+
+            New-LogEntry -message "Finished StartEncryption"
         }
         Catch {
             # Log error
             New-LogEntry -message $_.Exception.Message 
             Return 3
         }
-    }
-
-    'Debug' {
-       [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
-       
-       [System.Windows.Forms.MessageBox]::Show( "Banana!" )
     }
 }
 
